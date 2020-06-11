@@ -353,7 +353,7 @@ class DMN():
 
 
 
-    def parseDecionTable(self, cell):
+    def parseDecisionTable(self, cell):
         '''
         Parse a Decision Table
         '''
@@ -1349,7 +1349,7 @@ class DMN():
                     thisCell = cell.value
                     if isinstance(thisCell, str):
                         if thisCell in self.decisionTables:
-                            (rows, cols, rules) = self.parseDecionTable(cell)
+                            (rows, cols, rules) = self.parseDecisionTable(cell)
                             if rules == -1:
                                 status = {}
                                 if len(self.errors) > 0:
