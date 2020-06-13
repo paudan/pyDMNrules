@@ -5,10 +5,10 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='pyDMNrules',
-    version='0.1.7',
+    version='0.2',
     author='Russell McDonell',
     author_email='russell.mcdonell@c-cost.com',
-    description='An implementation of DMN in Python. DMN rules are read from an Excel workbook',
+    description='An implementation of DMN in Python. DMN rules are read from an Excel workbook or from JSON file',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/russellmcdonell/pyDMNrules',
