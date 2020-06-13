@@ -3,6 +3,7 @@
 # -----------------------------------------------------------------------------
 
 import sys
+import json
 import datetime
 import pySFeel
 from openpyxl import load_workbook
@@ -1384,7 +1385,7 @@ class DMN():
             self.errors.append('No rulesBook has been loaded')
             sys.exit(0)
         for item in self.glossaryItems:
-            retVal = self.sfeel('{} <- null'.format(item))
+            self.sfeel('{} <- null'.format(item))
 
 
     def decide(self, data):
@@ -2044,6 +2045,26 @@ class DMN():
                     tests['annotations'][thisTest].append((heading, thisCell))
 
         # Now run the tests
+        return self.runTest(tests, testData)
+
+
+    def testJson(self, filename):
+        with open(filename, 'r') as f:
+            input = json.load(f)
+        if input is None:  return None
+        testData = input.get('testData')
+        tests = input.get('testInstances')
+        if None in (testData, tests):
+            return None
+        for obj in testData.keys():
+            testData[obj]['unitData'] = [list(x.items()) for x in testData[obj]['data']]
+            del testData[obj]['data']
+        tests['inputColumns'] = [list(x.items()) for x in tests['inputData']]
+        tests['outputColumns'] = [list(x.items()) for x in tests['outputData']]
+        return self.runTest(tests, testData)
+
+
+    def runTest(self, tests, testData):
         results = []
         testStatus = []
         for thisTest in range(len(tests['inputColumns'])):
@@ -2053,6 +2074,7 @@ class DMN():
                 results[thisTest]['TestAnnotations'] = tests['annotations'][thisTest]
             data = {}
             dataAnnotations = []
+            inputColumns = len(tests['inputColumns'][thisTest])
             for inputCol in range(inputColumns):
                 (concept, thisIndex) = tests['inputColumns'][thisTest][inputCol]
                 for thisData in range(len(testData[concept]['unitData'][thisIndex - 1])):
@@ -2072,6 +2094,7 @@ class DMN():
             if 'errors' in status:
                 continue
             mismatches = []
+            outputColumns = len(tests['outputColumns'][thisTest])
             for outputCol in range(outputColumns):
                 (heading, expected) = tests['outputColumns'][thisTest][outputCol]
                 if heading not in newData['Result']:
@@ -2082,3 +2105,47 @@ class DMN():
                 results[thisTest]['Mismatches'] = mismatches
         return(testStatus, results)
 
+
+    def serializeToJson(self, filename):
+        output = {
+            'glossary': self.glossary,
+            'decisionTable': self.decisionTables,
+            'decisionRule': self.rules
+        }
+        with open(filename, 'w') as f:
+            json.dump(output, f, indent=2)
+
+
+    def loadJson(self, filename):
+        status = {}
+        with open(filename, 'r') as f:
+            input = json.load(f)
+        if input is None:
+            status['errors'] = 'File does not exist or is empty'
+            return status
+        self.glossary = input.get('glossary')
+        self.decisionTables = input.get('decisionTable')
+        self.rules = input.get('decisionRule')
+        decisions = input.get('decisions')
+        if self.glossary is None:
+            status['errors'] = 'Glossary is not present'
+        elif self.decisionTables is None:
+            status['errors'] = 'Decision tables section is not present'
+        elif self.rules is None:
+            status['errors'] = 'Decision rules section is not present'
+        elif decisions is None:
+            status['errors'] = 'Decisions section is not present'
+        if None in [self.glossary, self.decisionTables, self.rules, decisions]:
+            return status
+        self.isLoaded = True
+        self.glossaryLoaded = True
+        concepts = set([item['concept'] for item in self.glossary.values()])
+        self.glossaryConcepts = dict(zip(concepts, [[] for _ in range(len(concepts))]))
+        for key, item in self.glossary.items():
+            self.glossaryConcepts[item['concept']].append(key)
+        self.glossaryItems = {item['item']:key for key, item in self.glossary.items()}
+        self.decisions = [[item.get('table'), [[item.get('decision').get('name'), item.get('decision').get('value')]], []]
+                          for item in decisions if not None in (item.get('decision'), item.get('table'))]
+        if len(self.errors) > 0:
+            status['errors'] = self.errors
+        return status
