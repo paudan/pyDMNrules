@@ -1,0 +1,98 @@
+{
+  "testData": {
+    "Patient": {
+      "heading": [
+        "Patient Age",
+        "Patient Allergies",
+        "Patient Creatinine Level",
+        "Patient Creatinine Clearance",
+        "Patient Weight",
+        "Patient Active Medication"
+      ],
+      "data": [
+        {
+          "Patient Age": 58,
+          "Patient Allergies":["Penicillin", "Streptomycin"],
+          "Patient Creatinine Level": 2,
+          "Patient Creatinine Clearance": 44.42,
+          "Patient Weight": 78,
+          "Patient Active Medication": "Coumadin"
+        },
+        {
+          "Patient Age": 65,
+          "Patient Creatinine Level": 2,
+          "Patient Creatinine Clearance": 48.03,
+          "Patient Weight": 83
+        },
+        {
+          "Patient Age": 27,
+          "Patient Creatinine Level": 1.88,
+          "Patient Weight": 110
+        }
+      ],
+      "annotations": [
+        [],
+        [],
+        []
+      ]
+    },
+    "DoctorVisit": {
+      "heading": [
+        "Encounter Diagnosis"
+      ],
+      "data": [
+        {
+          "Encounter Diagnosis": "Acute Sinusitis"
+        },
+        {
+          "Encounter Diagnosis": "Diabetes"
+        }
+      ],
+      "annotations": [
+        [],
+        []
+      ]
+    }
+  },
+  "testInstances": {
+    "headings": [
+      "DoctorVisit",
+      "Patient",
+      "Recommended Medication",
+      "Patient Creatinine Clearance"
+    ],
+    "inputData": [
+      {
+        "DoctorVisit": 1,
+        "Patient": 1
+      },
+      {
+        "DoctorVisit": 1,
+        "Patient": 2
+      },
+      {
+        "DoctorVisit": 2,
+        "Patient": 3
+      }
+    ],
+    "outputData": [
+      {
+        "Recommended Medication": "Levofloxacin",
+        "Patient Creatinine Clearance": 44.416667
+      },
+      {
+        "Recommended Medication": "Amoxicillin",
+        "Patient Creatinine Clearance": 48.032407
+      },
+      {
+        "Recommended Medication": null,
+        "Patient Creatinine Clearance": null
+      }
+    ],
+    "annotations": [
+      [],
+      [],
+      []
+    ]
+  }
+}

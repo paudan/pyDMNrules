@@ -1,0 +1,321 @@
+{
+  "glossary": {
+    "Encounter Diagnosis": {
+      "item": "DoctorVisit.encounterDiagnosis",
+      "concept": "DoctorVisit"
+    },
+    "Recommended Medication": {
+      "item": "DoctorVisit.recommendedMedication",
+      "concept": "DoctorVisit"
+    },
+    "Recommended Dose": {
+      "item": "DoctorVisit.recommendedDose",
+      "concept": "DoctorVisit"
+    },
+    "Warning": {
+      "item": "DoctorVisit.warning",
+      "concept": "DoctorVisit"
+    },
+    "Error Message": {
+      "item": "DoctorVisit.errorMessage",
+      "concept": "DoctorVisit"
+    },
+    "Patient Age": {
+      "item": "Patient.age",
+      "concept": "Patient"
+    },
+    "Patient Weight": {
+      "item": "Patient.weight",
+      "concept": "Patient"
+    },
+    "Patient Allergies": {
+      "item": "Patient.allergies",
+      "concept": "Patient"
+    },
+    "Patient Creatinine Level": {
+      "item": "Patient.creatinineLevel",
+      "concept": "Patient"
+    },
+    "Patient Creatinine Clearance": {
+      "item": "Patient.creatinineClearance",
+      "concept": "Patient"
+    },
+    "Patient Active Medication": {
+      "item": "Patient.activeMedication",
+      "concept": "Patient"
+    }
+  },
+  "decisionTable": {
+    "DefineMedication": {
+      "name": "Define Medication",
+      "inputColumns": [
+        {
+          "name": "Patient Age"
+        },
+        {
+          "name": "Patient Allergies"
+        }
+      ],
+      "outputColumns": [
+        {
+          "name": "Recommended Medication"
+        }
+      ],
+      "hitPolicy": "U"
+    },
+    "CalculateCreatinineClearance": {
+      "name": "Define Creatinine Clearance",
+      "inputColumns": [],
+      "outputColumns": [
+        {
+          "name": "Patient Creatinine Clearance"
+        }
+      ],
+      "hitPolicy": "U"
+    },
+    "DefineDosing": {
+      "name": "Define Dosing",
+      "inputColumns": [
+        {
+          "name": "Patient Age"
+        },
+        {
+          "name": "Patient Creatinine Level"
+        },
+        {
+          "name": "Patient Creatinine Clearance"
+        }
+      ],
+      "outputColumns": [
+        {
+          "name": "Recommended Dose"
+        }
+      ],
+      "hitPolicy": "U"
+    },
+    "WarnAboutDrugInteraction": {
+      "name": "Check Drug Interaction",
+      "inputColumns": [
+        {
+          "name": "Recommended Medication"
+        },
+        {
+          "name": "Patient Active Medication"
+        }
+      ],
+      "outputColumns": [
+        {
+          "name": "Warning"
+        }
+      ],
+      "hitPolicy": "U"
+    },
+    "ErrorMessage": {
+      "name": "Create Message",
+      "inputColumns": [],
+      "outputColumns": [
+        {
+          "name": "Error Message"
+        }
+      ],
+      "hitPolicy": "U"
+    }
+  },
+  "decisionRule": {
+    "DefineMedication": [
+      {
+        "tests": [
+          [
+            "Patient Allergies",
+            "\"Penicillin\" in Patient.allergies"
+          ]
+        ],
+        "outputs": [
+          [
+            "Recommended Medication",
+            "\"Levofloxacin\"",
+            null
+          ]
+        ],
+        "ruleId": "Med-1"
+      },
+      {
+        "tests": [
+          [
+            "Patient Age",
+            "Patient.age >= 18"
+          ]
+        ],
+        "outputs": [
+          [
+            "Recommended Medication",
+            "\"Amoxicillin\"",
+            null
+          ]
+        ],
+        "ruleId": "Med-2"
+      },
+      {
+        "tests": [
+          [
+            "Patient Age",
+            "Patient.age < 18"
+          ]
+        ],
+        "outputs": [
+          [
+            "Recommended Medication",
+            "\"Cefuroxime\"",
+            null
+          ]
+        ],
+        "ruleId": "Med-3"
+      }
+    ],
+    "CalculateCreatinineClearance": [
+      {
+        "tests": [],
+        "outputs": [
+          [
+            "Patient Creatinine Clearance",
+            "decimal( ( 140 - Patient.age ) * Patient.weight / ( Patient.creatinineLevel * 72 ) , 6 )",
+            null
+          ]
+        ],
+        "ruleId": "Clearance-1"
+      }
+    ],
+    "DefineDosing": [
+      {
+        "tests": [
+          [
+            "Patient Age",
+            "Patient.age in([15 .. 60])"
+          ]
+        ],
+        "outputs": [
+          [
+            "Recommended Dose",
+            "\"500mg every 24 hours for 14 days\"",
+            null
+          ]
+        ],
+        "ruleId": "Dose-1"
+      },
+      {
+        "tests": [
+          [
+            "Patient Creatinine Level",
+            "Patient.creatinineLevel > 1.4"
+          ],
+          [
+            "Patient Creatinine Clearance",
+            "Patient.creatinineClearance < 50"
+          ]
+        ],
+        "outputs": [
+          [
+            "Recommended Dose",
+            "\"250mg every 24 hours for 14 days\"",
+            null
+          ]
+        ],
+        "ruleId": "Dose-2"
+      },
+      {
+        "tests": [],
+        "outputs": [
+          [
+            "Recommended Dose",
+            "\"Not defined yet\"",
+            null
+          ]
+        ],
+        "ruleId": "Dose-3"
+      }
+    ],
+    "WarnAboutDrugInteraction": [
+      {
+        "tests": [
+          [
+            "Recommended Medication",
+            "DoctorVisit.recommendedMedication = \"Levofloxacin\""
+          ],
+          [
+            "Patient Active Medication",
+            "Patient.activeMedication = \"Coumadin\""
+          ]
+        ],
+        "outputs": [
+          [
+            "Warning",
+            "\"Coumadin and Levofloxacin can result in reduced effectiveness of Coumadin\"",
+            null
+          ]
+        ],
+        "ruleId": "Interaction-1"
+      },
+      {
+        "tests": [],
+        "outputs": [
+          [
+            "Warning",
+            "null",
+            null
+          ]
+        ],
+        "ruleId": "Interaction-2"
+      }
+    ],
+    "ErrorMessage": [
+      {
+        "tests": [],
+        "outputs": [
+          [
+            "Error Message",
+            "\"Sorry, this decision service can handle only Acute Sinusitis\"",
+            null
+          ]
+        ],
+        "ruleId": "Error-1"
+      }
+    ]
+  },
+  "decisions": [
+    {
+      "table": "DefineMedication",
+      "decision": {
+        "name": "Encounter Diagnosis",
+        "value": "\"Acute Sinusitis\""
+      }
+    },
+    {
+      "table": "CalculateCreatinineClearance",
+      "decision": {
+        "name": "Encounter Diagnosis",
+        "value": "\"Acute Sinusitis\""
+      }
+    },
+    {
+      "table": "DefineDosing",
+      "decision": {
+        "name": "Encounter Diagnosis",
+        "value": "\"Acute Sinusitis\""
+      }
+    },
+    {
+      "table": "WarnAboutDrugInteraction",
+      "decision": {
+        "name": "Encounter Diagnosis",
+        "value": "\"Acute Sinusitis\""
+      }
+    },
+    {
+      "table": "ErrorMessage",
+      "decision": {
+        "name": "Encounter Diagnosis",
+        "value": "DoctorVisit.encounterDiagnosis != \"Acute Sinusitis\""
+      }
+    }
+  ]
+}

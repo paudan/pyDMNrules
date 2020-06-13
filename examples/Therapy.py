@@ -1,15 +1,26 @@
+import os
 import sys
 import pyDMNrules
 
+filename = 'Therapy.json'
+
 if __name__ == '__main__':
 
+    fileext = os.path.splitext(filename)[1]
+    filePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), filename)
     dmnRules = pyDMNrules.DMN()
-    status = dmnRules.load('Therapy.xlsx')
+    if fileext.lower() == '.xlsx':
+        status = dmnRules.load(filePath)
+    elif fileext.lower() == '.json':
+        status = dmnRules.loadJson(filePath)
+    else:
+        print('Invalid file extension')
+        sys.exit(0)
     if 'errors' in status:
-        print('Therapy.xlsx has errors', status['errors'])
+        print(filename, 'has errors', status['errors'])
         sys.exit(0)
     else:
-        print('Therapy.xlsx loaded')
+        print(filename, 'loaded')
 
     data = {}
     data['Patient Age'] = 56
@@ -28,7 +39,15 @@ if __name__ == '__main__':
         print('With errors', status['errors'])
     print()
 
-    (testStatus, results) = dmnRules.test()
+    if fileext.lower() == '.xlsx':
+        (testStatus, results) = dmnRules.test()
+    elif fileext.lower() == '.json':
+        testFilePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'TherapyTest.json')
+        (testStatus, results) = dmnRules.testJson(testFilePath)
+    else:
+        print('Invalid file extension')
+        sys.exit(0)
+
     for test in range(len(results)):
         if 'Mismatches' not in results[test]:
             print('Test ID', results[test]['Test ID'], 'passed')
@@ -46,9 +65,7 @@ if __name__ == '__main__':
         print('with errors', repr(testStatus))
         sys.exit(0)
 
-    print('Decisions(results)', results)
-
-    # Report the structure of results
+    print('Decisions (results)', results)
     print()
     print('Keys in a results list entry')
     print(results[-1].keys())
